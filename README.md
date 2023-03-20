@@ -22,7 +22,7 @@ cnay [-l file] [-d] [-r]
 | `-d` | Enable debug output |
 | `-r` | Show original hostname in brackets |
 
-If no flags are provided, `cnay` reads from `stdin`.
+If no `-l` flag is provided, `cnay` reads from `stdin`.
 
 ### Examples
 
