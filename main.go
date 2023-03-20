@@ -85,32 +85,54 @@ func readHostnames(reader io.Reader, debug bool) []string {
 }
 
 func resolveHostnames(hostnames []string, debug, showHostname bool) []string {
+	type result struct {
+		ip       string
+		hostname string
+		err      error
+	}
+
+	results := make(chan result)
+
+	for _, hostname := range hostnames {
+		go func(hostname string) {
+			ips, err := net.LookupIP(hostname)
+			if err != nil {
+				if debug {
+					fmt.Printf("Error resolving %s: %s\n", hostname, err)
+				}
+				results <- result{err: err}
+				return
+			}
+
+			cname, err := getFinalCNAME(hostname)
+			if err == nil && !sameDomain(hostname, cname) {
+				if debug {
+					fmt.Printf("%s is an alias for %s, skipping\n", hostname, cname)
+				}
+				results <- result{err: fmt.Errorf("%s is an alias for %s", hostname, cname)}
+				return
+			}
+
+			for _, ip := range ips {
+				if ip.To4() != nil {
+					ipStr := ip.String()
+					results <- result{ip: ipStr, hostname: hostname}
+				}
+			}
+		}(hostname)
+	}
+
 	ipSet := make(map[string]struct{})
 	ipHostnameMap := make(map[string]string)
-	for _, hostname := range hostnames {
-		ips, err := net.LookupIP(hostname)
-		if err != nil {
-			if debug {
-				fmt.Printf("Error resolving %s: %s\n", hostname, err)
-			}
+
+	for range hostnames {
+		res := <-results
+		if res.err != nil {
 			continue
 		}
 
-		cname, err := getFinalCNAME(hostname)
-		if err == nil && !sameDomain(hostname, cname) {
-			if debug {
-				fmt.Printf("%s is an alias for %s, skipping\n", hostname, cname)
-			}
-			continue
-		}
-
-		for _, ip := range ips {
-			if ip.To4() != nil {
-				ipStr := ip.String()
-				ipSet[ipStr] = struct{}{}
-				ipHostnameMap[ipStr] = hostname
-			}
-		}
+		ipSet[res.ip] = struct{}{}
+		ipHostnameMap[res.ip] = res.hostname
 	}
 
 	uniqueIPs := make([]string, 0, len(ipSet))
