@@ -1,8 +1,10 @@
 # cnay
 
-`cnay` is a command-line tool that resolves a list of hostnames to their corresponding IP addresses. 
+`cnay` is a command-line tool that resolves a list of hostnames to their corresponding IP addresses.
 
 It filters the results to include only unique IPv4 addresses from hostnames with an A record **or** A records from CNAMEs on the **same domain**.
+
+This is useful for example if you want to go port scanning a list of subdomains but you want to quickly remove subdomains that are likely pointing at third-party services.
 
 ## Installation
 
@@ -29,6 +31,7 @@ If no `-l` flag is provided, `cnay` reads from `stdin`.
 ### Examples
 
 Resolve hostnames from a file:
+
 ```
 $ cnay -l hostnames.txt
 8.8.8.8
@@ -36,12 +39,14 @@ $ cnay -l hostnames.txt
 ```
 
 Resolve hostnames from `stdin`:
+
 ```
 $ echo "www.google.com" | cnay
 172.217.6.4
 ```
 
 Show original hostname in brackets:
+
 ```
 $ cnay -r -l hostnames.txt
 8.8.8.8 [google-public-dns-a.google.com]

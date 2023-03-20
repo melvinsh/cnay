@@ -48,4 +48,3 @@ www.bitfinex.com
 lnd0.bitfinex.com
 beta.bitfinex.com
 cs.bitfinex.com
-
