@@ -7,7 +7,7 @@ It filters the results to include only unique IPv4 addresses from hostnames with
 ## Installation
 
 ```
-go get github.com/melvinsh/cnay
+go install github.com/melvinsh/cnay@latest
 ```
 
 ## Usage
