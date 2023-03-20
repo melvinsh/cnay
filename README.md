@@ -1,6 +1,6 @@
 # cnay
 
-`cnay` is a command-line tool that resolves a list of hostnames to their corresponding IP addresses. It filters the results to include only unique, sorted IPv4 addresses from hostnames with an A record, excluding those with a CNAME record, unless the CNAME is on the same domain as the input hostname.
+`cnay` is a command-line tool that resolves a list of hostnames to their corresponding IP addresses. It filters the results to include only unique, sorted IPv4 addresses from hostnames with an A record **or** A records from CNAMEs on the **same domain**.
 
 ## Installation
 
