@@ -19,6 +19,7 @@ func main() {
 	listFile := flag.String("l", "", "Path to the file containing the list of hostnames")
 	debug := flag.Bool("d", false, "Enable debug output")
 	showHostname := flag.Bool("r", false, "Show original hostname in brackets")
+	useProgressBar := flag.Bool("pb", false, "Enable progress bar")
 	flag.Parse()
 
 	reader, err := getInputReader(*listFile, *debug)
@@ -31,7 +32,7 @@ func main() {
 
 	hostnames := readHostnames(reader, *debug)
 
-	uniqueIPs := resolveHostnames(hostnames, *debug, *showHostname)
+	uniqueIPs := resolveHostnames(hostnames, *debug, *showHostname, *useProgressBar)
 	for _, ip := range uniqueIPs {
 		fmt.Println(ip)
 	}
@@ -86,16 +87,17 @@ func readHostnames(reader io.Reader, debug bool) []string {
 	return hostnames
 }
 
-func resolveHostnames(hostnames []string, debug, showHostname bool) []string {
+func resolveHostnames(hostnames []string, debug, showHostname, useProgressBar bool) []string {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	ipSet := make(map[string]struct{})
 	ipHostnameMap := make(map[string]string)
 	totalHostnames := len(hostnames)
 
-	progress := pb.New(totalHostnames)
-	progress.Output = os.Stderr
-	if !debug {
+	var progress *pb.ProgressBar
+	if useProgressBar && !debug {
+		progress = pb.New(totalHostnames)
+		progress.Output = os.Stderr
 		progress.Start()
 		defer progress.Finish()
 	}
@@ -109,7 +111,9 @@ func resolveHostnames(hostnames []string, debug, showHostname bool) []string {
 				if debug {
 					fmt.Printf("Error resolving %s: %s\n", hostname, err)
 				}
-				progress.Increment()
+				if progress != nil {
+					progress.Increment()
+				}
 				return
 			}
 
@@ -118,7 +122,9 @@ func resolveHostnames(hostnames []string, debug, showHostname bool) []string {
 				if debug {
 					fmt.Printf("%s is an alias for %s, skipping\n", hostname, cname)
 				}
-				progress.Increment()
+				if progress != nil {
+					progress.Increment()
+				}
 				return
 			}
 
@@ -133,7 +139,9 @@ func resolveHostnames(hostnames []string, debug, showHostname bool) []string {
 				}
 			}
 
-			progress.Increment()
+			if progress != nil {
+				progress.Increment()
+			}
 		}(hostname)
 	}
 

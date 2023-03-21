@@ -3,6 +3,7 @@
 A command-line tool that resolves a list of hostnames to their corresponding IP addresses.
 
 It filters the results to include only unique IPv4 addresses from:
+
 - Hostnames with an A record.
 - A records from CNAMEs on the same domain (`foo.example.com -> bar.example.com -> 1.1.1.1`).
 
@@ -17,7 +18,7 @@ go install github.com/melvinsh/cnay@latest
 ## Usage
 
 ```
-cnay [-l file] [-d] [-r]
+cnay [-l file] [-d] [-r] [-pb]
 ```
 
 ### Flags
@@ -27,6 +28,7 @@ cnay [-l file] [-d] [-r]
 | `-l` | Path to the file containing the list of hostnames |
 | `-d` | Enable debug output |
 | `-r` | Show original hostname in brackets |
+| `-pb` | Enable progress bar |
 
 If no `-l` flag is provided, `cnay` reads from `stdin`.
 
