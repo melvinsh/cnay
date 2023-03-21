@@ -1,10 +1,12 @@
 # cnay
 
-`cnay` is a command-line tool that resolves a list of hostnames to their corresponding IP addresses.
+A command-line tool that resolves a list of hostnames to their corresponding IP addresses.
 
-It filters the results to include only unique IPv4 addresses from hostnames with an A record **or** A records from CNAMEs on the **same domain**.
+It filters the results to include only unique IPv4 addresses from:
+- Hostnames with an A record.
+- A records from CNAMEs on the same domain (`foo.example.com -> bar.example.com -> 1.1.1.1`).
 
-This is useful for example if you want to go port scanning a list of subdomains but you want to quickly remove subdomains that are likely pointing at third-party services.
+Is useful for quickly eliminating subdomains that are likely pointing to third-party services.
 
 ## Installation
 
