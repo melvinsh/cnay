@@ -1,0 +1,3 @@
+setting.bitfinex.com
+h.bitfinex.com
+eos-bp.bitfinex.com
