@@ -126,6 +126,8 @@ func resolveHostnames(hostnames []string, debug, showHostname bool) []string {
 }
 
 func sameDomain(hostname, cname string) bool {
+	cname = strings.TrimSuffix(cname, ".")
+
 	hostnameDomain, err := publicsuffix.EffectiveTLDPlusOne(hostname)
 	if err != nil {
 		return false
@@ -139,27 +141,27 @@ func sameDomain(hostname, cname string) bool {
 	return strings.EqualFold(hostnameDomain, cnameDomain)
 }
 
-func getFinalCNAME(hostname string) (string, error) {
-	var finalCNAME string
-	for {
-		cname, err := net.LookupCNAME(hostname)
+func getFinalCNAME(domain string) (string, error) {
+	maxDepth := 10
+	depth := 0
+
+	for depth < maxDepth {
+		cname, err := net.LookupCNAME(domain)
 		if err != nil {
 			return "", err
 		}
 
-		cname = strings.TrimSuffix(cname, ".")
-
-		if cname == hostname {
+		if cname == domain || cname == "" {
 			break
 		}
 
-		finalCNAME = cname
-		hostname = cname
+		domain = cname
+		depth++
 	}
 
-	if finalCNAME == "" {
-		return "", fmt.Errorf("no CNAME record found for %s", hostname)
+	if depth == maxDepth {
+		return "", fmt.Errorf("maximum CNAME chain depth (%d) exceeded", maxDepth)
 	}
 
-	return finalCNAME, nil
+	return domain, nil
 }
