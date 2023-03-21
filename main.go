@@ -9,7 +9,9 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 
+	"github.com/cheggaaa/pb"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -85,33 +87,57 @@ func readHostnames(reader io.Reader, debug bool) []string {
 }
 
 func resolveHostnames(hostnames []string, debug, showHostname bool) []string {
+	var wg sync.WaitGroup
+	var mu sync.Mutex
 	ipSet := make(map[string]struct{})
 	ipHostnameMap := make(map[string]string)
-	for _, hostname := range hostnames {
-		ips, err := net.LookupIP(hostname)
-		if err != nil {
-			if debug {
-				fmt.Printf("Error resolving %s: %s\n", hostname, err)
-			}
-			continue
-		}
+	totalHostnames := len(hostnames)
 
-		cname, err := getFinalCNAME(hostname)
-		if err == nil && !sameDomain(hostname, cname) {
-			if debug {
-				fmt.Printf("%s is an alias for %s, skipping\n", hostname, cname)
-			}
-			continue
-		}
-
-		for _, ip := range ips {
-			if ip.To4() != nil {
-				ipStr := ip.String()
-				ipSet[ipStr] = struct{}{}
-				ipHostnameMap[ipStr] = hostname
-			}
-		}
+	progress := pb.New(totalHostnames)
+	progress.Output = os.Stderr
+	if !debug {
+		progress.Start()
+		defer progress.Finish()
 	}
+
+	for _, hostname := range hostnames {
+		wg.Add(1)
+		go func(hostname string) {
+			defer wg.Done()
+			ips, err := net.LookupIP(hostname)
+			if err != nil {
+				if debug {
+					fmt.Printf("Error resolving %s: %s\n", hostname, err)
+				}
+				progress.Increment()
+				return
+			}
+
+			cname, err := getFinalCNAME(hostname)
+			if err == nil && !sameDomain(hostname, cname) {
+				if debug {
+					fmt.Printf("%s is an alias for %s, skipping\n", hostname, cname)
+				}
+				progress.Increment()
+				return
+			}
+
+			mu.Lock()
+			defer mu.Unlock()
+
+			for _, ip := range ips {
+				if ip.To4() != nil {
+					ipStr := ip.String()
+					ipSet[ipStr] = struct{}{}
+					ipHostnameMap[ipStr] = hostname
+				}
+			}
+
+			progress.Increment()
+		}(hostname)
+	}
+
+	wg.Wait()
 
 	uniqueIPs := make([]string, 0, len(ipSet))
 	for ip := range ipSet {
