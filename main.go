@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	listFile := flag.String("l", "", "Path to the file containing the list of hostnames")
 	debug := flag.Bool("d", false, "Enable debug output")
+	listFile := flag.String("l", "", "Path to the file containing the list of hostnames")
 	showHostname := flag.Bool("r", false, "Show original hostname in brackets")
 	useProgressBar := flag.Bool("pb", false, "Enable progress bar")
 	flag.Parse()

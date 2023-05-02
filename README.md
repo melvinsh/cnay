@@ -11,13 +11,13 @@ Is useful for quickly eliminating subdomains that are likely pointing to third-p
 
 ## Installation
 
-```
+``` bash
 go install github.com/melvinsh/cnay@latest
 ```
 
 ## Usage
 
-```
+``` bash
 cnay [-l file] [-d] [-r] [-pb]
 ```
 
@@ -36,7 +36,7 @@ If no `-l` flag is provided, `cnay` reads from `stdin`.
 
 Resolve hostnames from a file:
 
-```
+``` bash
 $ cnay -l hostnames.txt
 8.8.8.8
 8.8.4.4
@@ -44,14 +44,14 @@ $ cnay -l hostnames.txt
 
 Resolve hostnames from `stdin`:
 
-```
+``` bash
 $ echo "www.google.com" | cnay
 172.217.6.4
 ```
 
 Show original hostname in brackets:
 
-```
+``` bash
 $ cnay -r -l hostnames.txt
 8.8.8.8 [google-public-dns-a.google.com]
 8.8.4.4 [google-public-dns-b.google.com]
@@ -63,6 +63,6 @@ This tool relies on the `golang.org/x/net/publicsuffix` package to determine if 
 
 To install this dependency, run:
 
-```
+``` bash
 go get -u golang.org/x/net/publicsuffix
 ```
